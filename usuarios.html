@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+  <link rel="stylesheet" href="./src/css/style.css">
+  <title>ATI Brasil Chamadas Telefonicas</title>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar Section -->
+    <aside>
+      <div class="toggle">
+        <div class="logo">
+          <img src="./src/img/logo.png">
+          <h2>ATI<span class="danger">Brasil</span></h2>
+        </div>
+        <div class="close" id="close-btn">
+          <span class="material-icons-sharp">
+            Fechado
+          </span>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <!-- <a href="#">
+          <span class="material-icons-sharp">
+            dashboard
+          </span>
+          <h3>Dashboard</h3>
+        </a> -->
+        <a href="./usuarios.html" class="active">
+          <span class="material-icons-sharp">
+            person_outline
+          </span>
+          <h3>Usuarios</h3>
+        </a>
+        <a href="./historico.html"  >
+          <span class="material-icons-sharp">
+            receipt_long
+          </span>
+          <h3>Historico de Chamadas</h3>
+        </a>
+        <a href="./dashboard.html">
+          <span class="material-icons-sharp">
+            insights
+          </span>
+          <h3>Analytics</h3>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp">
+            logout
+          </span>
+          <h3>Logout</h3>
+        </a>
+      </div>
+    </aside>
+    <!-- End of Sidebar Section -->
+
+    <!-- Main Content -->
+    <main>         
+          
+      <div id="loadingContainer" >
+              <img class="imgLoading" src="./src/img/logo.png" />
+            </div>
+            <footer class="footer">© 2024 ATI Brasil - Todos os direitos reservados. <br/>Creater by Guilherme Marques</footer>
+    </main>
+
+  </div>
+  <!-- Adicione isso ao head do seu HTML -->  
+  <script type="module" src="./src/js/index.js"></script>
+</body>
+</html>
