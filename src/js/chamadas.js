@@ -1,72 +1,74 @@
-// chamadas.js
-import { fazerLogin } from './login';
+    // chamadas.js
+    import { fazerLogin } from "./login";
 
-export let paginaAtual = 1;
-export const itensPorPagina = 10;
-export let numeracaoPaginasContainer;
-export let totalChamadas;
+    export let paginaAtual = 1;
+    export const itensPorPagina = 10;
+    export let numeracaoPaginasContainer;
+    export let totalChamadas;
 
-const loadingContainer = document.getElementById("loadingContainer");
+    const loadingContainer = document.getElementById("loadingContainer");
 
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
     mostrarLoading();
     obterChamadas(renderizarTabela);
-});
+    });
 
-export async function obterChamadas(callback) {
+    export async function obterChamadas(callback, userIDFiltro, iniDTFiltro) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
 
         if (!token) {
-            await fazerLogin();
+        await fazerLogin();
         }
 
-        const url = `https://apigravadorvmc.voicemanager.cloud/api/getcalls?page=${paginaAtual}&limit=${itensPorPagina}`;
-   
+        const url = `https://apigravadorvmc.voicemanager.cloud/api/getcallsFilter?page=${paginaAtual}&limit=${itensPorPagina}`;
+
         const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: "Bearer " + token,
-            },
+        method: "GET",
+        headers: {
+            Authorization: "Bearer " + token,
+        },
         });
 
         if (!response.ok) {
-            throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
+        throw new Error(
+            `Erro na requisição: ${response.status} - ${response.statusText}`
+        );
         }
 
         const data = await response.json();
-   
-        totalChamadas = data.length;
 
-        if (callback && typeof callback === 'function') {
-            esconderLoading();
-            callback(data, token);
+        totalChamadas = data.length;
+      
+
+        if (callback && typeof callback === "function") {
+        esconderLoading();
+        callback(data, token, userIDFiltro, iniDTFiltro);
         }
 
         return data; // Adicionado o retorno dos dados da API
-
     } catch (error) {
         esconderLoading();
         console.error("Erro ao obter chamadas:", error.message || error);
         throw error;
     }
-}
+    }
 
-export function mostrarLoading() {
+    export function mostrarLoading() {
     loadingContainer.style.display = "block";
-}
+    }
 
-export function esconderLoading() {
+    export function esconderLoading() {
     loadingContainer.style.display = "none";
-}
+    }
 
-numeracaoPaginasContainer = document.getElementById("numeracaoPaginas");
+    numeracaoPaginasContainer = document.getElementById("numeracaoPaginas");
 
-export function renderizarTabela(dados, token, userIDFiltro, iniDTFiltro) {
+    export function renderizarTabela(dados, token, userIDFiltro, iniDTFiltro) {
     const tabelaChamadas = document.querySelector(".recent-orders table tbody");
 
     if (!tabelaChamadas) {
-        console.error('Elemento da tabela não encontrado.');
+        console.error("Elemento da tabela não encontrado.");
         return;
     }
 
@@ -79,56 +81,62 @@ export function renderizarTabela(dados, token, userIDFiltro, iniDTFiltro) {
     const endIndex = startIndex + itensPorPagina;
     const chamadasParaExibir = dados.slice(startIndex, endIndex);
 
-    chamadasParaExibir.forEach(chamada => {
+    chamadasParaExibir.forEach((chamada) => {
         // Adicionado filtro com base no userID e iniDT
         const userIDPrefixo = chamada.userID.substring(0, 4);
 
-        if ((!userIDFiltro || userIDPrefixo.includes(userIDFiltro)) &&
-            (!iniDTFiltro || chamada.iniDT.trim() === iniDTFiltro.trim())) {
-            const tr = createTableRow(chamada, token);
-            tabelaChamadas.appendChild(tr);
+        if (
+        (!userIDFiltro || userIDPrefixo.includes(userIDFiltro)) &&
+        (!iniDTFiltro || chamada.iniDT.trim() === iniDTFiltro.trim())
+        ) {
+        const tr = createTableRow(chamada, token);
+        tabelaChamadas.appendChild(tr);
         }
     });
 
     criarNumeracaoPaginas();
-}
+    }
 
-function createTableRow(chamada, token) {
+    function createTableRow(chamada, token) {
     const tr = document.createElement("tr");
     const statusClass = getStatusClass(chamada.status);
 
     tr.innerHTML = `
-        <td>${chamada.grupo}</td>
-        <td>${chamada.userID}</td>
-        <td>${chamada.dst}</td>
-        <td>${chamada.iniHR}</td>
-        <td>${chamada.iniDT}</td>
-        <td class="${getTipoClass(chamada.tipo)}">${chamada.tipo}</td>
-        <td><button class="download" onclick="baixarChamada('${chamada.pathFile}', '${token}', '${chamada.grupo}', '${chamada.userID}', '${chamada.iniDT}', '${chamada.iniHR}')">Download</button></td>
-    `;
+            <td>${chamada.grupo}</td>
+            <td>${chamada.userID}</td>
+            <td>${chamada.dst}</td>
+            <td>${chamada.iniHR}</td>
+            <td>${chamada.iniDT}</td>
+            <td class="${getTipoClass(chamada.tipo)}">${chamada.tipo}</td>
+            <td><button class="download" onclick="baixarChamada('${
+            chamada.pathFile
+            }', '${token}', '${chamada.grupo}', '${chamada.userID}', '${
+        chamada.iniDT
+    }', '${chamada.iniHR}')">Download</button></td>
+        `;
 
     tr.classList.add(statusClass);
 
     return tr;
-}
+    }
 
-function getStatusClass(status) {
+    function getStatusClass(status) {
     return status === "Perdida"
         ? "danger"
         : status === "Atendida"
         ? "warning"
         : "primary";
-}
+    }
 
-function getTipoClass(tipo) {
+    function getTipoClass(tipo) {
     return tipo === "saida"
         ? "danger"
         : tipo === "entrada"
         ? "success"
         : "primary";
-}
+    }
 
-export function criarNumeracaoPaginas() {
+    export function criarNumeracaoPaginas(chamadasParaExibir) {
     if (!numeracaoPaginasContainer) {
         return;
     }
@@ -140,7 +148,7 @@ export function criarNumeracaoPaginas() {
     const paginaAntesDoPonto = 5;
     const paginaDepoisDoPonto = numeroDePaginas - 4;
 
-    const inicioButton = criarBotaoPagina("Início", 1);
+    const inicioButton = criarBotaoPagina("Início", 1, chamadasParaExibir);
     numeracaoPaginasContainer.appendChild(inicioButton);
 
     let startPage, endPage;
@@ -157,22 +165,31 @@ export function criarNumeracaoPaginas() {
     }
 
     for (let i = startPage; i <= endPage; i++) {
-        const button = criarBotaoPagina(i < 10 ? `0${i}` : `${i}`, i);
+        const button = criarBotaoPagina(
+        i < 10 ? `0${i}` : `${i}`,
+        i,
+        chamadasParaExibir
+        );
         numeracaoPaginasContainer.appendChild(button);
     }
 
-    const finalButton = criarBotaoPagina("Final", numeroDePaginas);
+    const finalButton = criarBotaoPagina(
+        "Final",
+        numeroDePaginas,
+        chamadasParaExibir
+    );
     numeracaoPaginasContainer.appendChild(finalButton);
 
     const infoContainer = document.getElementById("infoContainer");
     if (infoContainer) {
         const startIndex = (paginaAtual - 1) * itensPorPagina;
         const endIndex = startIndex + itensPorPagina;
-        infoContainer.innerHTML = `Items per page: ${itensPorPagina} - ${startIndex + 1} – ${Math.min(endIndex, totalChamadas)} of ${totalChamadas}`;
+        infoContainer.innerHTML = `Items per page: ${itensPorPagina} - ${
+        startIndex + 1
+        } – ${Math.min(endIndex, totalChamadas)} of ${totalChamadas}`;
     }
-}
-
-function criarBotaoPagina(texto, numero) {
+    }
+    function criarBotaoPagina(texto, numero, chamadasParaExibir) {
     const button = document.createElement("button");
     button.textContent = texto;
     button.classList.add("pagina-button");
@@ -182,17 +199,21 @@ function criarBotaoPagina(texto, numero) {
         button.classList.add("pagina-atual");
     }
 
-    button.addEventListener("click", () => mudarPagina(numero));
+    button.addEventListener("click", () =>
+        mudarPagina(numero, chamadasParaExibir)
+    );
     return button;
-}
-
-function mudarPagina(numero) {
+    }
+    function mudarPagina(numero, chamadasParaExibir) {
     paginaAtual = numero;
-    obterChamadas(renderizarTabela);
-}
+    obterChamadas(renderizarTabela, chamadasParaExibir);
+    }
 
-function baixarChamada(pathFile, token, grupo, userID, iniDT, iniHR) {
-    const nomeArquivo = `${grupo}_${userID.substring(0, 4)}_${iniDT}_${iniHR.substring(0, 5)}.wav`;
+    function baixarChamada(pathFile, token, grupo, userID, iniDT, iniHR) {
+    const nomeArquivo = `${grupo}_${userID.substring(
+        0,
+        4
+    )}_${iniDT}_${iniHR.substring(0, 5)}.wav`;
 
     const urlDownload = `https://apigravadorvmc.voicemanager.cloud/api/file/${pathFile}`;
 
@@ -203,19 +224,19 @@ function baixarChamada(pathFile, token, grupo, userID, iniDT, iniHR) {
     fetch(urlDownload, { headers })
         .then((response) => response.blob())
         .then((blob) => {
-            const url = window.URL.createObjectURL(
-                new Blob([blob], { type: "audio/wav" })
-            );
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = nomeArquivo;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        const url = window.URL.createObjectURL(
+            new Blob([blob], { type: "audio/wav" })
+        );
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         })
         .catch((error) => {
-            console.error("Erro ao baixar chamada:", error);
+        console.error("Erro ao baixar chamada:", error);
         });
-}
+    }
 
-window.baixarChamada = baixarChamada;
+    window.baixarChamada = baixarChamada;

@@ -1,173 +1,73 @@
-// Defina as variáveis no escopo global
-let inputDestinatario;
-let chamadas = [];
-let filtroUserID = "";
-let filtroData = "";
-let dataLimite;
-let chamadasFiltradas;
+// filtroChamadas.js
+import { obterChamadas, renderizarTabela, mostrarLoading, esconderLoading  } from './chamadas';
 
-// Função para formatar a data
-function formatarData(data) {
-    if (data) {
-        const dataArray = data.split('/');
-        const dataFormatada = `${dataArray[2]}-${dataArray[1]}-${dataArray[0]}`;
-        return dataFormatada;
-    } else {
-        return null;
-    }
-}
+// Importa as funções e variáveis necessárias de chamadas.jsimport { obterChamadas, renderizarTabela, mostrarLoading, esconderLoading, numeracaoPaginasContainer, totalChamadas } from './chamadas';
 
-// Função para limpar a tabela
-function limparTabela() {
-    const tabelaChamadas = document.querySelector('.recent-orders table tbody');
+document.getElementById('botaoFiltrar').addEventListener('click', function () {
+    // Captura os valores dos elementos de entrada
+    var dataFiltro = document.querySelector('.date').value;
+    var ramalFiltro = document.querySelector('.search-txt').value;
+
+    // Mostra o loading enquanto obtém e filtra as chamadas
+    mostrarLoading();
+
+    // Obtém as chamadas filtradas
+    obterChamadas(function (dados, token) {
+        const chamadasFiltradas = filtrarChamadas(dados, dataFiltro, ramalFiltro);
+        console.log(chamadasFiltradas)
+        // Renderiza a tabela com as chamadas filtradas
+        renderizarTabela(chamadasFiltradas, token);
+
+        // Esconde o loading após renderizar a tabela
+        esconderLoading();
+    });
+});
+
+// Função para filtrar chamadas com base na data e no ramal
+function filtrarChamadas(dados, dataFiltro, ramalFiltro) {
+    // Declara a variável localmente
+    let chamadasFiltradas = dados.filter(function (chamada) {
+        const userIDPrefixo = chamada.userID.substring(0, 4);
     
-    if (tabelaChamadas) {
-        tabelaChamadas.innerHTML = '';
-    } else {
-        console.warn('Tabela não encontrada para limpeza.');
-    }
+        const matchRamal = !ramalFiltro || userIDPrefixo.includes(ramalFiltro);
+    
+        // Ajusta o formato da data para considerar "dd/mm/yyyy" ou "yyyy-mm-dd"
+        const matchData = !dataFiltro ||
+            chamada.iniDT.trim() === dataFiltro.trim() ||
+            chamada.iniDT.split('/').reverse().join('-') === dataFiltro;
+    
+        // Remove a segunda verificação desnecessária de matchUserID
+        return matchRamal && matchData;
+    });
+    
+    //console.log('Chamadas Filtradas:', chamadasFiltradas);  // Verifique as chamadas filtradas
+    
+    return chamadasFiltradas;
 }
 
-// Função para atualizar a tabela com chamadas filtradas
-function atualizarTabela(chamadasFiltradas) {
-    const tabelaChamadas = document.querySelector('.recent-orders table tbody');
+// Modifique a função baixarChamadasFiltradas para aceitar dataFiltro e ramalFiltro como argumentos
+function baixarChamadasFiltradas(dados, token, dataFiltro, ramalFiltro) {
+    // Obtém as chamadas filtradas
+    const chamadasFiltradas = filtrarChamadas(dados, dataFiltro, ramalFiltro);
 
-    chamadasFiltradas.forEach(chamada => {
-        const tr = document.createElement('tr');
-        const tdID = document.createElement('td');
-        tdID.textContent = chamada.id; // Substitua pelo nome da propriedade correta
-        // Adicione outras colunas conforme necessário
-
-        tr.appendChild(tdID);
-        // Adicione outras células conforme necessário
-
-        tabelaChamadas.appendChild(tr);
+    // Itera sobre as chamadas filtradas e baixa cada uma delas
+    chamadasFiltradas.forEach((chamada) => {
+        baixarChamada(chamada.pathFile, token, chamada.grupo, chamada.userID, chamada.iniDT, chamada.iniHR);
     });
 }
 
-// Função para buscar chamadas na API
-async function buscarChamadasAPI(dataSelecionada) {
-    try {
-        const token = localStorage.getItem('token');
+// Adicione um botão de download total no seu HTML
+// e chame a função baixarChamadasFiltradas passando dataFiltro e ramalFiltro
+document.getElementById('botaoDownloadTotal').addEventListener('click', function () {
+    // Captura os valores dos elementos de entrada
+    var dataFiltro = document.querySelector('.date').value;
+    var ramalFiltro = document.querySelector('.search-txt').value;
 
-        if (!token) {
-            console.error('Token não encontrado. Redirecionando para a página de login.');
-            return;
-        }
+    mostrarLoading(); // Mostre o loading enquanto baixa as chamadas
 
-        // Inicializa a data limite
-        dataLimite = new Date();
-
-        // Cria a URL com base nos filtros
-        const url = `https://apigravadorvmc.voicemanager.cloud/api/getcallsfilter?page=1&limit=10&iniDT=${formatarData(dataSelecionada)}`;
-
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + token,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`);
-        }
-
-        const chamadasAPI = await response.json();
-
-      
-       
-            // Armazenar chamadas filtradas fora da função
-      
-        chamadasFiltradas = chamadasAPI.filter(
-            chamada =>
-                new Date(formatarData(chamada.iniDT)) > dataLimite &&
-                chamada.userID.toLowerCase().includes(filtroUserID) &&
-                (filtroData ? formatarData(chamada.iniDT).startsWith(filtroData) : true)
-        );
-
-        // Atualiza a variável global chamadas com as chamadas filtradas
-        chamadas = chamadasFiltradas;
-         
-        // Atualiza a tabela com as chamadas filtradas
-        atualizarTabela(chamadasFiltradas);
-        console.log(chamadasFiltradas)
-    } catch (error) {
-        console.error('Erro ao buscar chamadas na API:', error.message || error);
-    }
-}
-
-// Função para filtrar chamadas
-export function filtrarChamadas() {
-    const inputData = document.querySelector('.btn-pesquisa .date');
-    inputDestinatario = document.querySelector('.btn-pesquisa .search-txt');
-
-    if (!inputDestinatario || !inputData) {
-        console.error('Elementos HTML não encontrados.');
-        return;
-    }
-
-    const filtroUserID = inputDestinatario.value.toLowerCase();
-    const filtroData = inputData.value;
-
-    // Lógica para filtrar chamadas com base nos critérios
-    chamadasFiltradas = chamadas.filter(chamada =>
-        new Date(formatarData(chamada.iniDT)) > dataLimite &&
-        chamada.userID.toLowerCase().includes(filtroUserID) &&
-        (filtroData ? formatarData(chamada.iniDT).startsWith(filtroData) : true)
-    );
-    
-    // Limpar a tabela antes de renderizar os dados filtrados
-    limparTabela();
-
-    // Atualizar a tabela com as chamadas filtradas
-    atualizarTabela(chamadasFiltradas);
-
-    // Exibir o resultado no console
-    console.log("Chamadas Filtradas:", chamadasFiltradas);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const inputData = document.querySelector('.btn-pesquisa .date');
-    inputDestinatario = document.querySelector('.btn-pesquisa .search-txt');
-
-    if (!inputData || !inputDestinatario) {
-        console.error('Elementos HTML não encontrados.');
-        return;
-    }
-
-    const botaoFiltrar = document.querySelector('.btn-pesquisa .botaoFiltrar');
-    if (botaoFiltrar) {
-        botaoFiltrar.addEventListener('click', () => {
-            console.log('Botão de Filtrar Clicado');
-            const dataSelecionada = inputData.value;
-
-            // Chame a função para buscar chamadas na API
-            buscarChamadasAPI(dataSelecionada);
-        });
-    }
+    // Obtém as chamadas e realiza o download total
+    obterChamadas(function (dados, token) {
+        baixarChamadasFiltradas(dados, token, dataFiltro, ramalFiltro);
+        esconderLoading(); // Esconde o loading após o download total
+    });
 });
-
-// Função para configurar o botão de filtrar
-export function configurarBotaoFiltrar() {
-    const inputData = document.querySelector('.btn-pesquisa .date');
-    inputDestinatario = document.querySelector('.btn-pesquisa .search-txt');
-
-    if (!inputData || !inputDestinatario) {
-        console.error('Elementos HTML não encontrados.');
-        return;
-    }
-
-    const botaoFiltrar = document.querySelector('.btn-pesquisa .botaoFiltrar');
-    if (botaoFiltrar) {
-        botaoFiltrar.addEventListener('click', () => {
-            console.log('Botão de Filtrar Clicado');
-            const dataSelecionada = inputData.value;
-
-            // Chame a função para buscar chamadas na API
-            buscarChamadasAPI(dataSelecionada);
-        });
-    }
-}
-
-// Inicialize o botão de filtrar
-configurarBotaoFiltrar();

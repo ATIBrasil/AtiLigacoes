@@ -1,14 +1,18 @@
 import { obterChamadas, esconderLoading, mostrarLoading } from "./chamadas";
 
-const paginaAtual = 1;
+let paginaAtual = 1;
 const usuariosPorPagina = 3;
-const IMAGEM_PADRAO = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxWcQF3mfUC16jH-Ja4m6PK-L2zVXXwJq7nR3sMKbwXQ&s";
+const paginasPorBloco = 10;
+const IMAGEM_PADRAO =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxWcQF3mfUC16jH-Ja4m6PK-L2zVXXwJq7nR3sMKbwXQ&s";
 
 async function encontrarUsuariosPorNumeroDeChamadas() {
   const userListContainer = document.getElementById("userList");
 
   if (!userListContainer) {
-    console.error("Elemento HTML 'userList' não encontrado. Certifique-se de que o ID está correto.");
+    console.error(
+      "Elemento HTML 'userList' não encontrado. Certifique-se de que o ID está correto."
+    );
     return;
   }
 
@@ -31,7 +35,7 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
             "Minutos total da interação": "Não disponível",
           };
         }
-       
+
         usuariosInfo[userIDPrefixo].TotalDeChamadas += 1;
 
         if (!usuariosInfo[userIDPrefixo].dstContagem[dst]) {
@@ -40,17 +44,19 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
           usuariosInfo[userIDPrefixo].dstContagem[dst] += 1;
         }
 
-        if (usuariosInfo[userIDPrefixo].dstContagem[dst] > usuariosInfo[userIDPrefixo].NumeroDeInterações) {
+        if (
+          usuariosInfo[userIDPrefixo].dstContagem[dst] >
+          usuariosInfo[userIDPrefixo].NumeroDeInterações
+        ) {
           usuariosInfo[userIDPrefixo].Interagiu = dst !== undefined ? dst : "";
-          usuariosInfo[userIDPrefixo].NumeroDeInterações = usuariosInfo[userIDPrefixo].dstContagem[dst];
+          usuariosInfo[userIDPrefixo].NumeroDeInterações =
+            usuariosInfo[userIDPrefixo].dstContagem[dst];
         }
-
-        // Adicione o console.log para mostrar as interações
-        
       });
 
-      return Object.values(usuariosInfo).sort((a, b) => b.TotalDeChamadas - a.TotalDeChamadas);
-      
+      return Object.values(usuariosInfo).sort(
+        (a, b) => b.TotalDeChamadas - a.TotalDeChamadas
+      );
     } catch (error) {
       throw new Error("Erro ao obter e ordenar chamadas: " + error.message);
     }
@@ -59,7 +65,9 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
   async function obterChamadasUsuario(userID) {
     try {
       const chamadas = await obterChamadas();
-      return chamadas.filter((chamada) => chamada.userID.substring(0, 4) === userID);
+      return chamadas.filter(
+        (chamada) => chamada.userID.substring(0, 4) === userID
+      );
     } catch (error) {
       throw new Error("Erro ao obter chamadas do usuário: " + error.message);
     }
@@ -73,14 +81,23 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
       const startIndex = (paginaAtual - 1) * usuariosPorPagina;
       const endIndex = startIndex + usuariosPorPagina;
 
+      const totalPaginas = Math.ceil(
+        listaUsuariosOrdenada.length / usuariosPorPagina
+      );
+      const blocoAtual = Math.ceil(paginaAtual / paginasPorBloco);
+
       let totalNumeroDeInterações = 0;
       let chamadasUsuarioMaiorInteração = null;
 
-      for (let i = startIndex; i < endIndex && i < listaUsuariosOrdenada.length; i++) {
+      for (
+        let i = startIndex;
+        i < endIndex && i < listaUsuariosOrdenada.length;
+        i++
+      ) {
         const usuario = listaUsuariosOrdenada[i];
         const usuarioContainer = document.createElement("div");
         usuarioContainer.classList.add("usuarioContainer");
-       
+
         const imagemDiv = document.createElement("div");
         const imagemElement = document.createElement("img");
         imagemElement.src = usuario.imagem;
@@ -103,7 +120,9 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
 
               if (valor > totalNumeroDeInterações) {
                 totalNumeroDeInterações = valor;
-                chamadasUsuarioMaiorInteração = await obterChamadasUsuario(usuario.Ramal);
+                chamadasUsuarioMaiorInteração = await obterChamadasUsuario(
+                  usuario.Ramal
+                );
               }
             } else {
               campoElement.innerHTML = `<strong>${campo}:</strong> ${valor}`;
@@ -118,11 +137,50 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
         usuarioContainer.classList.add("user-container");
         userListContainer.appendChild(usuarioContainer);
       }
+
+      const paginacaoContainer = document.createElement("div");
+      paginacaoContainer.classList.add("paginacao-container");
+
+      // Botão "Início"
+      const botaoInicio = criarBotaoPagina("Início", 1);
+      paginacaoContainer.appendChild(botaoInicio);
+
+      // Botões de página
+      const intervaloPaginas = 1; // Agora, mostra apenas as 5 primeiras páginas inicialmente
+      const paginasAnteriores = 1; // Ajuste conforme necessário
+      
+      for (let pagina = Math.max(1, paginaAtual - paginasAnteriores); pagina <= Math.min(totalPaginas, paginaAtual + intervaloPaginas); pagina++) {
+        const botaoPagina = criarBotaoPagina(pagina.toString(), pagina);
+        if (pagina === paginaAtual) {         
+          botaoPagina.classList.add("pagina-atual");
+        }
+      
+        paginacaoContainer.appendChild(botaoPagina);
+      }
+
+      // Botão "Final"
+      const botaoFinal = criarBotaoPagina("Final", totalPaginas);
+      paginacaoContainer.appendChild(botaoFinal);
+
+      userListContainer.appendChild(paginacaoContainer);
     } catch (error) {
       console.error("Erro ao renderizar usuários:", error.message);
     } finally {
       esconderLoading();
     }
+  }
+
+  function criarBotaoPagina(texto, numeroPagina) {
+    const botaoPagina = document.createElement("button");
+    botaoPagina.classList.add("pagina-button");
+    botaoPagina.textContent = texto;
+    botaoPagina.addEventListener("click", (event) => {
+      event.preventDefault(); // Evita a ação padrão do botão
+      paginaAtual = numeroPagina;
+      renderizarUsuarios();
+    });
+    botaoPagina.classList.add("botao-pagina");
+    return botaoPagina;
   }
 
   renderizarUsuarios();

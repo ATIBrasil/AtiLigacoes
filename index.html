@@ -134,12 +134,12 @@
             <input class="date" type="date" />
             <div class="search-box">
               <input class="search-txt" type='search' placeholder="Insira o ramal" />
-              <a href="#" class="search-btn">
-                <img class="botaoFiltrar" src="./src/img/lupa.svg" alt="Pesquisar" height="20" width="20"
-                  onclick="configurarBotaoFiltrar()">
+              <a href="#" class="search-btn" id="botaoFiltrar">
+                <img src="./src/img/lupa.svg" alt="Pesquisar" height="20" width="20">
               </a>
             </div>
-            <button class="botaoDownloadTodas">DownloadAll</button>
+            <button id="botaoDownloadTotal" class="botaoDownloadTotal">DownloadAll</button>
+
           </div>
 
           <!-- Adicione os botões de navegação aqui, fora da tabela -->
@@ -274,6 +274,7 @@
     </div>
   </div>
   <script type="module" src="./src/js/index.js"></script>
+  
 </body>
 
 </html>

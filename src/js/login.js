@@ -7,10 +7,11 @@ export async function fazerLogin(callback) {
     try {
         // Tente obter o token do localStorage
         const existingToken = localStorage.getItem('token');
-
+        
         if (existingToken) {
             // Redireciona para a página de dashboard se o token existir
             console.log("Token existente. Redirecionando para /dashboard.html");
+            consolelog(existingToken)
             window.location.href = '/dashboard.html';
             return;
         }
@@ -20,26 +21,16 @@ export async function fazerLogin(callback) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-                "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
             },
             body: JSON.stringify({ login, password }),
         });
 
         if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                // Redireciona para a página inicial (index.html) em caso de erro no login
-                console.log("Erro no login. Redirecionando para /index.html");
-                window.location.href = '/index.html';
-                return;
-            } else {
-                // Redireciona para a página inicial (index.html) para outros códigos de erro
-                console.log("Erro desconhecido. Redirecionando para /index.html");
-                window.location.href = '/index.html';
-                return;
-            }
+            console.error(`Erro durante o login. Status: ${response.status}`);
+
+            // Redireciona para a página inicial (index.html) em caso de erro no login
+            window.location.href = '/index.html';
+            return;
         }
 
         const data = await response.json();
