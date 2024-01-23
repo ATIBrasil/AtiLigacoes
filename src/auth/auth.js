@@ -20,15 +20,15 @@ function realizarLogin() {
       "&horario=" + encodeURIComponent(horarioAtual);
 
     // Envie uma requisição para a API usando fetch
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data => {
+   // fetch(apiUrl)
+     // .then(response => response.json())
+    //  .then(data => {
         // Trate a resposta da API conforme necessário
-        console.log(data);
+     //   console.log(data);
 
         // Redirecione para a página de destino após a resposta da API
         window.location.href = "dashboard.html";
-      });
+    //  });
   } else {
     // Senha incorreta, exiba uma mensagem de erro
     alert("Senha incorreta. Tente novamente.");
