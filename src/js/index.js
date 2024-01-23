@@ -1,7 +1,9 @@
 import "./chamadas";
 import "./ranking";
-import "./filtroChamadas";
-import "./teste";
+import "./analytics";
+import "./filtercall";
+import "./../auth/auth";
+
 
 const sideMenu = document.querySelector('aside');
 const menuBtn = document.getElementById('menu-btn');
@@ -22,3 +24,17 @@ darkMode.addEventListener('click', () => {
     darkMode.querySelector('span:nth-child(1)').classList.toggle('active');
     darkMode.querySelector('span:nth-child(2)').classList.toggle('active');
 })
+
+
+// Função para limpar o localStorage
+function limparLocalStorage() {
+    localStorage.removeItem('token');
+    window.location.reload();
+    
+  }
+function sair(){
+    localStorage.removeItem('senhaAutenticacao');
+    window.location.reload();
+}  
+document.getElementById('sair').addEventListener('click', sair);
+  document.getElementById('botaoLimparCache').addEventListener('click', limparLocalStorage);

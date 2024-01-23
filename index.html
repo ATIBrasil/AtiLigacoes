@@ -4,8 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
   <link rel="stylesheet" href="./src/css/style.css">  
+  <link rel="icon" href="./imagens/Logo ATI.png">
+  <script src="./src/auth/auth.js"></script>
 </head>
 
 <body>
@@ -16,7 +19,7 @@
       <div class="toggle">
         <div class="logo">
           <img src="./src/img/logo.png">
-          <h2>ATI<span class="danger">Brasil</span></h2>
+          <h2>A.T.I - <span class="danger">Brasil</span></h2>
         </div>
         <div class="close" id="close-btn">
           <span class="material-icons-sharp">
@@ -25,37 +28,26 @@
         </div>
       </div>
 
-      <div class="sidebar">
-        <!-- <a href="#">
-          <span class="material-icons-sharp">
-            dashboard
-          </span>
-          <h3>Dashboard</h3>
-        </a> -->
-        <a href="./usuarios.html">
-          <span class="material-icons-sharp">
-            person_outline
-          </span>
-          <h3>Usuarios</h3>
-        </a>
-        <a href="./historico.html">
-          <span class="material-icons-sharp">
-            receipt_long
-          </span>
-          <h3>Historico de Chamadas</h3>
-        </a>
+      <div class="sidebar">       
         <a href="#" class="active">
           <span class="material-icons-sharp">
             insights
           </span>
-          <h3>Analytics</h3>
+          <h3>Dashboard</h3>
         </a>
-        <a href="#">
+        <div class="sidebar">       
+          <a href="#" id="botaoLimparCache">
+            <span class="material-icons-sharp">
+              autorenew
+            </span>
+            <h3>Recarregar</h3>
+          </a>
+        <a href="#" id="sair">
           <span class="material-icons-sharp">
-            logout
+            settings_power
           </span>
-          <h3>Logout</h3>
-        </a>
+          <h3>Sair</h3>
+      </a>
       </div>
     </aside>
     <!-- End of Sidebar Section -->
@@ -66,10 +58,10 @@
       <!-- Analyses -->
       <div class="analyse">
         <div class="sales">
-          <div class="status">
+          <div id="totalLigacao" class="status">
             <div class="info">
               <h3>Total Ligações</h3>
-              <h1>470</h1>
+              <h1></h1>
             </div>
             <div class="progresss">
               <svg>
@@ -83,9 +75,9 @@
         </div>
         <div class="visits">
           <div class="status">
-            <div class="info">
-              <h3>Chamadas não atendidas</h3>
-              <h1>38</h1>
+            <div id="realizadas" class="info">
+              <h3>Chamadas realizadas</h3>
+              <h1></h1>
             </div>
             <div class="progresss">
               <svg>
@@ -98,10 +90,10 @@
           </div>
         </div>
         <div class="searches">
-          <div class="status">
+          <div id="recebidas" class="status">
             <div class="info">
-              <h3>Chamadas atendidas</h3>
-              <h1>320</h1>
+              <h3>Chamadas recebidas</h3>
+              <h1></h1>
             </div>
             <div class="progresss">
               <svg>
@@ -124,24 +116,21 @@
           
           <!-- A lista de usuários será adicionada dinamicamente aqui -->
         </div>
+        
         <!-- Recent Orders Table -->
-
-
-        <div class="recent-orders">
-          <br />
-          <h2>Ligações recentes</h2>
+        <div class="recent-orders">          
+          <h2>Ligações mais recentes</h2>        
           <div class="btn-pesquisa">
-            <input class="date" type="date" />
-            <div class="search-box">
+            <input id="calendario" class="date" type="date"/>           
+          <div class="search-box">
               <input class="search-txt" type='search' placeholder="Insira o ramal" />
               <a href="#" class="search-btn" id="botaoFiltrar">
-                <img src="./src/img/lupa.svg" alt="Pesquisar" height="20" width="20">
+                <img class="search-img" src="./imagens/lupa.png" alt="Pesquisar" height="20" width="20">
               </a>
             </div>
-            <button id="botaoDownloadTotal" class="botaoDownloadTotal">DownloadAll</button>
+            <button id="botaoDownloadTotal" class="botaoDownloadTotal">Baixar tudo</button>
 
           </div>
-
           <!-- Adicione os botões de navegação aqui, fora da tabela -->
 
 
@@ -154,7 +143,7 @@
                 <th>Horario</th>
                 <th>Data</th>
                 <th>Status</th>
-                <th>Donwload</th>
+                <th>Download</th>
               </tr>
             </thead>
             <!-- Adicione um identificador único para o botão -->
@@ -165,10 +154,25 @@
           </table>
 
         </div>
-        <div id="loadingContainer">
-          <img class="imgLoading" src="./src/img/logo.png" />
+        <div id="loadingContainer" class="initially-hidden">
+          <img class="imgLoading" src="./imagens/Logo ATI.png" />
         </div>
+        <div id="loading-container2" class="initially-hidden">
+            <div class="loading-text2">
+              <h1>Baixando...</h1>              
+            </div>
+          <div class="loading2">
+            <div class="line-box">
+              <div class="line"></div>
+
+            </div>
+          </div>
+        </div>
+        <div id="containerBotoesPaginacao" class="numeracao"></div>
         <div class="numeracao" id="numeracaoPaginas">
+           
+          <!-- Aqui será exibida a numeração das páginas -->
+        </div>
         </div>
         <footer class="footer">© 2024 ATI Brasil - Todos os direitos reservados. <br />Creater by Guilherme Marques
         </footer>
@@ -213,68 +217,16 @@
           <p>Controle de ligações</p>
         </div>
       </div>
-
-      <div class="reminders">
-        <div class="header">
-          <h2>Reminders</h2>
-          <span class="material-icons-sharp">
-            notifications_none
-          </span>
-        </div>
-
-        <div class="notification">
-          <div class="icon">
-            <span class="material-icons-sharp">
-              volume_up
-            </span>
-          </div>
-          <div class="content">
-            <div class="info">
-              <h3>Workshop</h3>
-              <small class="text_muted">
-                08:00 AM - 12:00 PM
-              </small>
-            </div>
-            <span class="material-icons-sharp">
-              more_vert
-            </span>
-          </div>
-        </div>
-
-        <div class="notification deactive">
-          <div class="icon">
-            <span class="material-icons-sharp">
-              edit
-            </span>
-          </div>
-          <div class="content">
-            <div class="info">
-              <h3>Workshop</h3>
-              <small class="text_muted">
-                08:00 AM - 12:00 PM
-              </small>
-            </div>
-            <span class="material-icons-sharp">
-              more_vert
-            </span>
-          </div>
-        </div>
-
-        <div class="notification add-reminder">
-          <div>
-            <span class="material-icons-sharp">
-              add
-            </span>
-            <h3>Add Reminder</h3>
-          </div>
-        </div>
-
       </div>
-
     </div>
   </div>
   <script type="module" src="./src/js/index.js"></script>
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Verificar a autenticação ao carregar a página
+      verificarAutenticacao();
+    });
+  </script>
 </body>
 
 </html>

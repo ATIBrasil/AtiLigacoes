@@ -1,8 +1,8 @@
-import { obterChamadas, esconderLoading, mostrarLoading } from "./chamadas";
+import { obterChamadas } from "./chamadas";
+
 
 let paginaAtual = 1;
 const usuariosPorPagina = 3;
-const paginasPorBloco = 10;
 const IMAGEM_PADRAO =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxWcQF3mfUC16jH-Ja4m6PK-L2zVXXwJq7nR3sMKbwXQ&s";
 
@@ -84,8 +84,6 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
       const totalPaginas = Math.ceil(
         listaUsuariosOrdenada.length / usuariosPorPagina
       );
-      const blocoAtual = Math.ceil(paginaAtual / paginasPorBloco);
-
       let totalNumeroDeInterações = 0;
       let chamadasUsuarioMaiorInteração = null;
 
@@ -166,7 +164,7 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
     } catch (error) {
       console.error("Erro ao renderizar usuários:", error.message);
     } finally {
-      esconderLoading();
+      
     }
   }
 
@@ -175,7 +173,7 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
     botaoPagina.classList.add("pagina-button");
     botaoPagina.textContent = texto;
     botaoPagina.addEventListener("click", (event) => {
-      event.preventDefault(); // Evita a ação padrão do botão
+      event.preventDefault(); 
       paginaAtual = numeroPagina;
       renderizarUsuarios();
     });
@@ -186,5 +184,5 @@ async function encontrarUsuariosPorNumeroDeChamadas() {
   renderizarUsuarios();
 }
 
-mostrarLoading();
+
 encontrarUsuariosPorNumeroDeChamadas();
